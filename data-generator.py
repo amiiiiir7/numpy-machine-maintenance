@@ -55,12 +55,69 @@ crit_pressure = critical_indices[14:]
 temperature[warning_temp] = np.random.randint(76, 85, size=10)
 vibration[warning_vibration] = np.random.randint(5, 9, size=10)
 pressure[warning_pressure] = np.random.randint(14, 16, size=10)
-running_hours[warning_hours] = np.random.randint(4250, 4751, size=10)
-energy_cons[warning_energy] = np.random.randint(500, 751, size=10)
+running_hours[warning_hours] = np.random.randint(4500, 5001, size=10)
+energy_cons[warning_energy] = np.random.randint(700, 1001, size=10)
 
 # Inject critical-level anomalies
-temperature[crit_temp] = np.random.randint(85, 95, size=7)
-vibration[crit_vibration] = np.random.randint(9,11,size=7)
+temperature[crit_temp] = np.random.randint(85, 96, size=7)
+vibration[crit_vibration] = np.random.randint(9,11, size=7)
 pressure[crit_pressure] = np.random.randint(16, 18, size=6)
 
+# --------------------------------------------------
+# Detect anomalies using thresholds
+# --------------------------------------------------
 
+# Temperature
+temp_warning = (temperature >= 76) & (temperature <= 84)
+temp_critical = temperature >= 85
+
+temp_warning_indices = np.where(temp_warning)[0]
+temp_critical_indices = np.where(temp_critical)[0]
+
+
+# Vibration
+vib_warning = (vibration >= 5) & (vibration <= 8)
+vib_critical = vibration >= 9
+
+vib_warning_indices = np.where(vib_warning)[0]
+vib_critical_indices = np.where(vib_critical)[0]
+
+
+# Pressure
+pres_warning = (pressure >= 14) & (pressure <= 15)
+pres_critical = pressure >= 16
+
+pres_warning_indices = np.where(pres_warning)[0]
+pres_critical_indices = np.where(pres_critical)[0]
+
+
+# Running hours
+# Warning indicator only
+run_warning = running_hours >= 4500
+
+run_warning_indices = np.where(run_warning)[0]
+
+
+# Energy consumption
+# Warning indicator only
+energy_warning = energy_cons >= 700
+
+energy_warning_indices = np.where(energy_warning)[0]
+
+
+# --------------------------------------------------
+# Detection summary
+# --------------------------------------------------
+
+print("Temperature:   Warning:", np.sum(temp_warning),
+      " Critical:", np.sum(temp_critical))
+
+print("Vibration:     Warning:", np.sum(vib_warning),
+      " Critical:", np.sum(vib_critical))
+
+print("Pressure:      Warning:", np.sum(pres_warning),
+      " Critical:", np.sum(pres_critical))
+
+print("Running hours: Warning:", np.sum(run_warning))
+
+print("Energy:        Warning:", np.sum(energy_warning))
