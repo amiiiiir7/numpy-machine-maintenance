@@ -7,33 +7,29 @@ np.set_printoptions(suppress=True, precision=2)
 N = 1000
 
 # Generate machine IDs
-machine_id = [f"M{i:03d}" for i in range(1, N+1)]
+machine_id = np.array([f"M{i:03d}" for i in range(1, N+1)])
 
 # Generate baseline machine data
-temperature = np.random.normal(60, 8, (N,))
+temperature = np.random.normal(60, 6, (N,))
 
-vibration = np.random.exponential(1.5, (N,))+1
+vibration = np.random.exponential(1, (N,))+1
 vibration = np.clip(vibration, 1, 10)
 
 pressure = np.random.normal(12, 1, (N,))
 
-running_hours = np.random.randint(0, 5001, (N,))
+running_hours = np.random.normal(1750, 500, (N,))
+running_hours = np.clip(running_hours,0,5000)
 
-energy_cons = np.random.exponential(150, (N,))+100
+energy_cons = np.random.exponential(100, (N,))+100
 energy_cons = np.clip(energy_cons, 100, 1000)
 
-# Combine machine measurements into one 1000 × 5 array
-machines = np.stack(
-    (temperature, vibration, pressure, running_hours, energy_cons),
-    axis=1
-)
 
 # --------------------------------------------------
 # Anomaly injection
 # --------------------------------------------------
 
 # Randomly select 70 unique machines
-rand_indices = np.random.choice(N, 70, False)
+rand_indices = np.random.choice(N, 70, replace=False)
 
 # Split selected machines into warning and critical groups
 warning_indices = rand_indices[:50]
@@ -44,7 +40,7 @@ warning_temp = warning_indices[:10]
 warning_vibration = warning_indices[10:20]
 warning_pressure = warning_indices[20:30]
 warning_hours = warning_indices[30:40]
-warning_energy = warning_indices[40:50]
+warning_energy = warning_indices[40:]
 
 # Split critical machines into three groups
 crit_temp = critical_indices[:7]
@@ -56,12 +52,21 @@ temperature[warning_temp] = np.random.randint(76, 85, size=10)
 vibration[warning_vibration] = np.random.randint(5, 9, size=10)
 pressure[warning_pressure] = np.random.randint(14, 16, size=10)
 running_hours[warning_hours] = np.random.randint(4500, 5001, size=10)
-energy_cons[warning_energy] = np.random.randint(700, 1001, size=10)
+energy_cons[warning_energy] = np.random.randint(750, 1001, size=10)
 
 # Inject critical-level anomalies
 temperature[crit_temp] = np.random.randint(85, 96, size=7)
 vibration[crit_vibration] = np.random.randint(9,11, size=7)
 pressure[crit_pressure] = np.random.randint(16, 18, size=6)
+
+# -------------------------
+# Build final dataset
+# -------------------------
+
+machines = np.stack(
+    (temperature, vibration, pressure, running_hours, energy_cons),
+    axis=1
+)
 
 # --------------------------------------------------
 # Detect anomalies using thresholds
@@ -100,7 +105,7 @@ run_warning_indices = np.where(run_warning)[0]
 
 # Energy consumption
 # Warning indicator only
-energy_warning = energy_cons >= 700
+energy_warning = energy_cons >= 750
 
 energy_warning_indices = np.where(energy_warning)[0]
 
@@ -121,3 +126,88 @@ print("Pressure:      Warning:", np.sum(pres_warning),
 print("Running hours: Warning:", np.sum(run_warning))
 
 print("Energy:        Warning:", np.sum(energy_warning))
+
+
+warning_mask = (temp_warning | vib_warning | pres_warning | run_warning | energy_warning)
+
+critical_mask = (temp_critical | vib_critical | pres_critical)
+
+
+status = np.full(N, 'Normal', dtype="<U8")
+
+status[warning_mask] = 'Warning'
+
+status[critical_mask] = 'Critical'
+
+
+# ==================================================
+#                 FINAL REPORT
+# ==================================================
+
+print("\n" + "=" * 70)
+print("                      MACHINE MAINTENANCE REPORT")
+print("=" * 70)
+
+
+# --------------------------------------------------
+# Overall Machine Status
+# --------------------------------------------------
+
+print("\nOverall Machine Status")
+print("-" * 70)
+
+normal_count = np.sum(status == "Normal")
+warning_count = np.sum(status == "Warning")
+critical_count = np.sum(status == "Critical")
+
+print(f"Normal:    {normal_count:3d} machines ({normal_count / N * 100:.1f}%)")
+print(f"Warning:   {warning_count:3d} machines ({warning_count / N * 100:.1f}%)")
+print(f"Critical:  {critical_count:3d} machines ({critical_count / N * 100:.1f}%)")
+
+
+# ==================================================
+# Critical Machines
+# ==================================================
+
+critic_indices = np.where(critical_mask)[0]
+critic_machines = machine_id[critic_indices]
+
+print("\n" + "=" * 70)
+print("                         CRITICAL MACHINES")
+print("=" * 70)
+
+print("\nAll Critical Machines:")
+print(critic_machines)
+
+print("\nCritical Machines due to Temperature:")
+print(machine_id[temp_critical_indices])
+
+print("\nCritical Machines due to Vibration:")
+print(machine_id[vib_critical_indices])
+
+print("\nCritical Machines due to Pressure:")
+print(machine_id[pres_critical_indices])
+
+
+# ==================================================
+# Warning Machines
+# ==================================================
+
+warn_indices = np.where(warning_mask)[0]
+warn_machines = machine_id[warn_indices]
+
+print("\n" + "=" * 70)
+print("                          WARNING MACHINES")
+print("=" * 70)
+
+print("\nAll Machines in Warning Situation:")
+print(warn_machines)
+
+
+# ==================================================
+# End of Report
+# ==================================================
+
+print("\n" + "=" * 70)
+print("                           END OF REPORT")
+print("=" * 70)
