@@ -69,20 +69,6 @@ I use simple thresholds to decide whether a measurement is in a warning or criti
 - Vibration: `>= 9`
 - Pressure: `>= 16`
 
-The detection itself is based on **Boolean masks**. For example, a warning mask combines the individual warning conditions:
-
-```python
-warning_mask = (
-    temp_warning |
-    vib_warning |
-    pres_warning |
-    run_warning |
-    energy_warning
-)
-```
-
-I found this part especially useful for understanding how NumPy can work with many values at once instead of checking each machine individually.
-
 ## From Conditions to Machine Status
 
 After detecting the conditions, I classify each machine as:
