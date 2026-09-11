@@ -1,16 +1,14 @@
 # NumPy Machine Maintenance
 
-This is one of my learning projects while I am getting more comfortable with **Python and NumPy**.
+This is one of my learning projects while getting more comfortable with **Python and NumPy**.
 
-I wanted to take a simple idea — monitoring a group of machines — and use it as an opportunity to practice NumPy in a way that feels a little more like a real data problem.
-
-The project generates synthetic machine measurements, adds some controlled anomalies, detects unusual values, and produces a simple maintenance report.
+I wanted to take a simple idea — monitoring a group of machines — and use it to practice NumPy in a way that feels a little closer to a real data problem.
 
 > **Note:** This is a learning and portfolio project. The goal is to practice NumPy and understand the thinking behind the code, not to build a real predictive-maintenance system.
 
 ## The Idea
 
-I simulate **1,000 machines**. Each machine has five measurements:
+I simulate **1,000 machines** with five measurements:
 
 - Temperature
 - Vibration
@@ -22,132 +20,78 @@ The basic flow is:
 
 **Generate → Add anomalies → Combine → Detect → Classify → Report**
 
-I chose this structure because it gives me a small but complete data-analysis problem to work with.
+## Data & Anomalies
 
-## Generating the Data
+The baseline data is generated using simple statistical distributions:
 
-For the baseline data, I used a few simple statistical assumptions:
-
-| Measurement | Distribution / Method |
+| Measurement | Method |
 |---|---|
-| Temperature | Normal distribution, mean 60, standard deviation 6 |
-| Vibration | Exponential distribution + 1, clipped to 1–10 |
-| Pressure | Normal distribution, mean 12, standard deviation 1 |
-| Running hours | Normal distribution, mean 1750, standard deviation 500, clipped to 0–5000 |
-| Energy consumption | Exponential distribution + 100, clipped to 100–1000 |
+| Temperature | Normal (mean 60, std 6) |
+| Vibration | Exponential + 1, clipped to 1–10 |
+| Pressure | Normal (mean 12, std 1) |
+| Running hours | Normal (mean 1750, std 500), clipped to 0–5000 |
+| Energy consumption | Exponential + 100, clipped to 100–1000 |
 
-I also use a fixed random seed (`42`) so that I can get the same results when I run the program again.
+I use a fixed random seed (`42`) so the results are reproducible.
 
-## Adding Some Anomalies
+To create something concrete to detect, I randomly select **70 unique machines** and inject controlled anomalies:
 
-The randomly generated data will naturally contain some high or unusual values, but I also wanted to create a controlled situation that I could test.
+- 50 warning-level cases
+- 20 critical-level cases
 
-I randomly select **70 unique machines**:
+## Detection
 
-- 50 receive warning-level anomalies
-- 20 receive critical-level anomalies
+I use simple threshold-based rules and NumPy Boolean masks.
 
-The warning cases are spread across the five measurements. Critical cases are added to temperature, vibration, and pressure.
+**Warning:** temperature `76–84`, vibration `5–8`, pressure `14–15`, running hours `>= 4500`, energy `>= 750`.
 
-This gave me something concrete to detect instead of just generating data and looking at it.
+**Critical:** temperature `>= 85`, vibration `>= 9`, pressure `>= 16`.
 
-## Detecting Anomalies
+A machine is classified as:
 
-I use simple thresholds to decide whether a measurement is in a warning or critical range.
-
-### Warning ranges
-
-- Temperature: `76–84`
-- Vibration: `5–8`
-- Pressure: `14–15`
-- Running hours: `>= 4500`
-- Energy consumption: `>= 750`
-
-### Critical ranges
-
-- Temperature: `>= 85`
-- Vibration: `>= 9`
-- Pressure: `>= 16`
-
-## From Conditions to Machine Status
-
-After detecting the conditions, I classify each machine as:
-
-- **Normal** — no warning or critical condition
-- **Warning** — at least one warning condition and no critical condition
+- **Normal** — no abnormal condition
+- **Warning** — at least one warning condition
 - **Critical** — at least one critical condition
 
-If a machine has both warning and critical conditions, I treat it as **Critical**.
+Critical takes priority if both conditions occur.
 
-This is a simple rule-based approach, but it helped me understand how Boolean arrays can be combined to create a higher-level result.
+## What I Practiced
 
-## What I Learned
+This project helped me connect NumPy concepts that I had previously studied separately:
 
-This project helped me connect several NumPy concepts that I had previously studied separately.
-
-Some of the main things I practiced were:
-
-- NumPy arrays and array shapes
 - `np.random.normal()` and `np.random.exponential()`
-- `np.random.choice()` for selecting unique indices
-- `np.clip()` for controlling generated values
-- `np.stack()` for building the final data array
-- Boolean conditions and masks
-- `np.where()` for getting indices
-- `np.sum()` for counting `True` values
+- `np.random.choice()`
+- `np.clip()`
+- `np.stack()`
+- Boolean masks and vectorized conditions
+- `np.where()` for indices
+- `np.sum()` for counting conditions
 - NumPy advanced indexing
-- Vectorized operations
 
-More importantly, I started to get a better feeling for the difference between:
+One of the useful lessons for me was understanding the difference between a **Boolean mask**, an **index**, and the **values selected by that index**.
 
-```text
-mask        → tells me which positions satisfy a condition
-np.where()  → gives me the positions
-array[...]  → gives me or changes the values at those positions
-np.sum()    → counts how many positions satisfy the condition
-```
+## Result
 
-That was one of the useful lessons from this project.
+The program finishes with a simple report showing machine status and machines that need attention.
 
-## Final Report
-
-The program finishes by printing a small report with the overall machine status and the machines that need attention.
-
-With the current random seed and settings, the result is:
+With the current seed and settings:
 
 - **89.2% Normal**
 - **8.8% Warning**
 - **2.0% Critical**
 
-The report also shows critical machines by measurement type and lists the machines in a warning situation.
+## Run the Project
 
-## Project Structure
-
-```text
-numpy-machine-maintenance/
-│
-├── data-generator.py
-└── README.md
-```
-
-## How to Run
-
-You only need Python and NumPy.
+You only need Python and NumPy:
 
 ```bash
 python data-generator.py
 ```
 
-## A Small Step in My Learning Journey
+## Learning Journey
 
-I built this project mainly to make myself use NumPy rather than just read about it.
-
-It is not a sophisticated project, and that is intentional. At this stage, I am more interested in understanding the fundamentals well and gradually taking on harder problems.
-
-This project is one step in the path I am following:
+I built this project mainly to make myself use NumPy rather than just read about it. It is intentionally simple; at this stage, I am more interested in understanding the fundamentals well and gradually taking on harder problems.
 
 **Python → NumPy → Pandas → Machine Learning → AI**
 
-I expect the next projects to become more data-oriented and eventually move from simple rules and analysis toward machine learning and prediction.
-
-For now, this is simply one small project where I learned a little more than I knew before.
+This is one small step in that journey.
