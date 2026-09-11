@@ -8,23 +8,6 @@ The project generates synthetic machine measurements, adds some controlled anoma
 
 > **Note:** This is a learning and portfolio project. The goal is to practice NumPy and understand the thinking behind the code, not to build a real predictive-maintenance system.
 
-## Why I Built This
-
-While learning NumPy, I wanted to move beyond isolated exercises and actually use the things I was learning together.
-
-So I tried to build a small project where I could practice:
-
-- creating and working with NumPy arrays
-- generating data from different distributions
-- selecting and modifying specific elements
-- using Boolean masks
-- finding indices with `np.where()`
-- counting conditions with `np.sum()`
-- combining arrays with `np.stack()`
-- using vectorized operations instead of writing loops for everything
-
-The project is intentionally simple. For me, the interesting part is not making the system complicated, but understanding **why each NumPy operation is useful and how the pieces fit together**.
-
 ## The Idea
 
 I simulate **1,000 machines**. Each machine has five measurements:
