@@ -22,17 +22,17 @@ The basic flow is:
 
 ## Data & Anomalies
 
-The baseline data is generated using simple statistical distributions:
+The baseline data is generated using simple statistical assumptions:
 
 | Measurement | Method |
 |---|---|
 | Temperature | Normal (mean 60, std 6) |
-| Vibration | Exponential + 1, clipped to 1–10 |
+| Vibration | Exponential (scale 1) + 1, clipped to 1–10 |
 | Pressure | Normal (mean 12, std 1) |
 | Running hours | Normal (mean 1750, std 500), clipped to 0–5000 |
-| Energy consumption | Exponential + 100, clipped to 100–1000 |
+| Energy consumption | Exponential (scale 100) + 100, clipped to 100–1000 |
 
-I use a fixed random seed (`42`) so the results are reproducible.
+A fixed random seed (`42`) is used so the results are reproducible.
 
 To create something concrete to detect, I randomly select **70 unique machines** and inject controlled anomalies:
 
@@ -88,10 +88,6 @@ You only need Python and NumPy:
 python data-generator.py
 ```
 
-## Learning Journey
+## Learning Note
 
 I built this project mainly to make myself use NumPy rather than just read about it. It is intentionally simple; at this stage, I am more interested in understanding the fundamentals well and gradually taking on harder problems.
-
-**Python → NumPy → Pandas → Machine Learning → AI**
-
-This is one small step in that journey.
