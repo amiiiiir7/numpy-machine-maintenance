@@ -1,12 +1,33 @@
 # NumPy Machine Maintenance
 
-A learning-focused NumPy project for generating synthetic machine measurements, injecting controlled anomalies, detecting abnormal conditions, and summarizing machine status.
+This is one of my learning projects while I am getting more comfortable with **Python and NumPy**.
 
-> **Project scope:** This is a portfolio and learning project designed to demonstrate fundamental NumPy and data-analysis skills. It is not intended to represent a production predictive-maintenance system.
+I wanted to take a simple idea — monitoring a group of machines — and use it as an opportunity to practice NumPy in a way that feels a little more like a real data problem.
 
-## Project Overview
+The project generates synthetic machine measurements, adds some controlled anomalies, detects unusual values, and produces a simple maintenance report.
 
-The project simulates a dataset for **1,000 machines** using NumPy. Each machine has five measurements:
+> **Note:** This is a learning and portfolio project. The goal is to practice NumPy and understand the thinking behind the code, not to build a real predictive-maintenance system.
+
+## Why I Built This
+
+While learning NumPy, I wanted to move beyond isolated exercises and actually use the things I was learning together.
+
+So I tried to build a small project where I could practice:
+
+- creating and working with NumPy arrays
+- generating data from different distributions
+- selecting and modifying specific elements
+- using Boolean masks
+- finding indices with `np.where()`
+- counting conditions with `np.sum()`
+- combining arrays with `np.stack()`
+- using vectorized operations instead of writing loops for everything
+
+The project is intentionally simple. For me, the interesting part is not making the system complicated, but understanding **why each NumPy operation is useful and how the pieces fit together**.
+
+## The Idea
+
+I simulate **1,000 machines**. Each machine has five measurements:
 
 - Temperature
 - Vibration
@@ -14,28 +35,15 @@ The project simulates a dataset for **1,000 machines** using NumPy. Each machine
 - Running hours
 - Energy consumption
 
-The workflow follows a simple data-analysis pipeline:
+The basic flow is:
 
-**Generate → Inject → Combine → Detect → Classify → Report**
+**Generate → Add anomalies → Combine → Detect → Classify → Report**
 
-## What This Project Demonstrates
+I chose this structure because it gives me a small but complete data-analysis problem to work with.
 
-- Creating and working with NumPy arrays
-- Generating synthetic data with probability distributions
-- Using `np.random.normal()` and `np.random.exponential()`
-- Controlling reproducibility with `np.random.seed()`
-- Limiting values with `np.clip()`
-- Selecting unique observations with `np.random.choice()`
-- Combining one-dimensional arrays with `np.stack()`
-- Building Boolean masks from threshold conditions
-- Extracting indices with `np.where()`
-- Counting Boolean conditions with `np.sum()`
-- Using NumPy advanced indexing to modify selected observations
-- Applying vectorized logic to classify machine status
+## Generating the Data
 
-## Data Generation
-
-The baseline measurements are generated using simple statistical assumptions:
+For the baseline data, I used a few simple statistical assumptions:
 
 | Measurement | Distribution / Method |
 |---|---|
@@ -45,24 +53,26 @@ The baseline measurements are generated using simple statistical assumptions:
 | Running hours | Normal distribution, mean 1750, standard deviation 500, clipped to 0–5000 |
 | Energy consumption | Exponential distribution + 100, clipped to 100–1000 |
 
-A fixed random seed (`42`) is used so the generated results are reproducible.
+I also use a fixed random seed (`42`) so that I can get the same results when I run the program again.
 
-## Anomaly Injection
+## Adding Some Anomalies
 
-To create a controlled test scenario, **70 unique machines** are selected randomly:
+The randomly generated data will naturally contain some high or unusual values, but I also wanted to create a controlled situation that I could test.
 
-- 50 machines receive warning-level anomalies.
-- 20 machines receive critical-level anomalies.
+I randomly select **70 unique machines**:
 
-Warning anomalies are distributed across all five measurements, while critical anomalies are introduced for temperature, vibration, and pressure.
+- 50 receive warning-level anomalies
+- 20 receive critical-level anomalies
 
-This controlled injection makes it possible to test the detection logic rather than relying only on naturally generated extreme values.
+The warning cases are spread across the five measurements. Critical cases are added to temperature, vibration, and pressure.
 
-## Detection Logic
+This gave me something concrete to detect instead of just generating data and looking at it.
 
-Each measurement is evaluated using Boolean conditions and predefined thresholds.
+## Detecting Anomalies
 
-### Warning indicators
+I use simple thresholds to decide whether a measurement is in a warning or critical range.
+
+### Warning ranges
 
 - Temperature: `76–84`
 - Vibration: `5–8`
@@ -70,25 +80,13 @@ Each measurement is evaluated using Boolean conditions and predefined thresholds
 - Running hours: `>= 4500`
 - Energy consumption: `>= 750`
 
-### Critical indicators
+### Critical ranges
 
 - Temperature: `>= 85`
 - Vibration: `>= 9`
 - Pressure: `>= 16`
 
-The final machine status follows a simple rule:
-
-- **Normal:** no warning or critical condition
-- **Warning:** at least one warning condition and no critical condition
-- **Critical:** at least one critical condition
-
-Critical status overrides warning status when both occur for the same machine.
-
-## NumPy Techniques in the Project
-
-One of the main learning goals is understanding how NumPy represents and processes data.
-
-For example:
+The detection itself is based on **Boolean masks**. For example, a warning mask combines the individual warning conditions:
 
 ```python
 warning_mask = (
@@ -100,37 +98,59 @@ warning_mask = (
 )
 ```
 
-The Boolean mask identifies machines that satisfy at least one warning condition.
+I found this part especially useful for understanding how NumPy can work with many values at once instead of checking each machine individually.
 
-Then:
+## From Conditions to Machine Status
 
-```python
-warn_indices = np.where(warning_mask)[0]
+After detecting the conditions, I classify each machine as:
+
+- **Normal** — no warning or critical condition
+- **Warning** — at least one warning condition and no critical condition
+- **Critical** — at least one critical condition
+
+If a machine has both warning and critical conditions, I treat it as **Critical**.
+
+This is a simple rule-based approach, but it helped me understand how Boolean arrays can be combined to create a higher-level result.
+
+## What I Learned
+
+This project helped me connect several NumPy concepts that I had previously studied separately.
+
+Some of the main things I practiced were:
+
+- NumPy arrays and array shapes
+- `np.random.normal()` and `np.random.exponential()`
+- `np.random.choice()` for selecting unique indices
+- `np.clip()` for controlling generated values
+- `np.stack()` for building the final data array
+- Boolean conditions and masks
+- `np.where()` for getting indices
+- `np.sum()` for counting `True` values
+- NumPy advanced indexing
+- Vectorized operations
+
+More importantly, I started to get a better feeling for the difference between:
+
+```text
+mask        → tells me which positions satisfy a condition
+np.where()  → gives me the positions
+array[...]  → gives me or changes the values at those positions
+np.sum()    → counts how many positions satisfy the condition
 ```
 
-extracts their array indices, while:
-
-```python
-warn_machines = machine_id[warn_indices]
-```
-
-uses NumPy indexing to retrieve the corresponding machine IDs.
+That was one of the useful lessons from this project.
 
 ## Final Report
 
-The script produces a text-based maintenance report containing:
+The program finishes by printing a small report with the overall machine status and the machines that need attention.
 
-- Overall Normal / Warning / Critical counts
-- Percentage of machines in each status
-- List of all critical machines
-- Critical machines by measurement type
-- List of warning machines
-
-With the fixed random seed and current configuration, the final classification contains approximately:
+With the current random seed and settings, the result is:
 
 - **89.2% Normal**
 - **8.8% Warning**
 - **2.0% Critical**
+
+The report also shows critical machines by measurement type and lists the machines in a warning situation.
 
 ## Project Structure
 
@@ -143,18 +163,22 @@ numpy-machine-maintenance/
 
 ## How to Run
 
-Make sure Python and NumPy are installed, then run:
+You only need Python and NumPy.
 
 ```bash
 python data-generator.py
 ```
 
-## Learning Objective
+## A Small Step in My Learning Journey
 
-The purpose of this project is not to build a sophisticated maintenance model. Instead, it is a practical exercise in turning a simple analytical idea into NumPy code.
+I built this project mainly to make myself use NumPy rather than just read about it.
 
-It represents one step in a broader learning path from **Python fundamentals → NumPy → Pandas → Machine Learning → AI**.
+It is not a sophisticated project, and that is intentional. At this stage, I am more interested in understanding the fundamentals well and gradually taking on harder problems.
 
-## Future Learning
+This project is one step in the path I am following:
 
-Possible future projects will build on these foundations by introducing Pandas for structured data analysis and then machine-learning techniques for prediction and evaluation.
+**Python → NumPy → Pandas → Machine Learning → AI**
+
+I expect the next projects to become more data-oriented and eventually move from simple rules and analysis toward machine learning and prediction.
+
+For now, this is simply one small project where I learned a little more than I knew before.
